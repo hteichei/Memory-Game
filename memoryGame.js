@@ -1,4 +1,4 @@
-const gameArray = [
+const catsData = [
   {
     name: "fluffy",
     img:
@@ -82,7 +82,7 @@ const gameArray = [
 ];
 
 //randomize the cards using sort property
-gameArray.sort(function(a, b) {
+catsData.sort(function(a, b) {
   return 0.5 - Math.random();
 });
 
@@ -116,7 +116,7 @@ const grid = document.createElement("section");
 grid.setAttribute("class", "grid");
 
 game.appendChild(grid);
-let newArray = [];
+let catsGrid = [];
 
 const body = document.querySelector("body");
 const scoreBoard = document.getElementById("scoreBoard");
@@ -127,75 +127,74 @@ function addCats(arr) {
     card.classList.add("cardBack");
     card.classList.add("card");
     card.dataset.name = val.name;
-    card.dataset.num = val.num;
-    card.dataset.img = `url(${val.img})`;
     card.style.backgroundImage = `url(${val.img})`;
-    newArray.push(card);
+    catsGrid.push(card);
     grid.appendChild(card);
   });
 }
 
-addCats(gameArray);
+addCats(catsData);
 
 let count = 0;
 let guess1 = null;
 let guess2 = null;
-let guess1Num = 1;
-let guess2Num = 2;
 let target1 = null;
 let totalClicks = 0;
 let matchedCount = 0;
 
 const clickCount = document.getElementById("clickCount");
 
-const selected = [];
+let selected = [];
 
-for (let i = 0; i < newArray.length; i++) {
-  newArray[i].addEventListener("click", function(event) {
-    // newArray[i].classList.remove('cardBack');
-    let clicked1 = event.target;
-    let clicked2 = event.target;
+function handleCatClick() {
+  let currentSelection = event.target;
 
-    if (clicked2 === target1) {
-      return;
+  if (currentSelection.classList.contains("currentSelection")) {
+    return;
+  }
+
+  if (selected.length === 2) {
+    return;
+  }
+
+  currentSelection.classList.add("currentSelection");
+  currentSelection.classList.remove("cardBack");
+
+  if (count < 2) {
+    count++;
+    totalClicks++;
+
+    if (count === 1) {
+      guess1 = currentSelection;
+      selected.push(guess1);
+    } else {
+      guess2 = currentSelection;
+      selected.push(guess2);
     }
 
-    if (count < 2) {
-      count++;
-      if (count === 1) {
-        guess1 = clicked1.dataset.name;
-        clicked1.classList.add("currentSelection");
-        clicked1.classList.remove("cardBack");
-        totalClicks++;
+    //check to see if guesses match
+    if (guess1 !== null && guess2 !== null) {
+      if (guess1.dataset.name === guess2.dataset.name) {
+        matchedCount += 2;
+        guess1.classList.add("matched");
+        guess2.classList.add("matched");
+        setTimeout(resetGuessMatch, 500);
       } else {
-        guess2 = clicked2.dataset.name;
-        clicked2.classList.add("currentSelection");
-        clicked2.classList.remove("cardBack");
-        totalClicks++;
+        //reset guesses if no match
+        setTimeout(resetGuessWrong, 1000);
       }
-      //check to see if guesses match
-      if (guess1 !== null && guess2 !== null) {
-        if (guess1 === guess2) {
-          matchedCount += 2;
-          var selected = document.querySelectorAll(".currentSelection");
-          selected[0].classList.add("matched");
-          selected[1].classList.add("matched");
-          setTimeout(resetGuessMatch, 500);
-        } else {
-          //reset guesses if no match
-          setTimeout(resetGuessWrong, 1000);
-        }
-        if (matchedCount === 16) {
-          winner();
-        }
+      if (matchedCount === catsData.length) {
+        winner();
       }
     }
-    target1 = clicked1;
-
-    //update total clicks variable on webpage
-    clickCount.innerHTML = totalClicks;
-  });
+  }
+  //update total clicks variable on webpage
+  clickCount.innerHTML = totalClicks;
 }
+
+catsGrid.forEach(function(catElement) {
+  catElement.addEventListener("click", handleCatClick);
+});
 
 function winner() {
   body.style.backgroundColor = "red";
@@ -215,6 +214,7 @@ function resetGuessWrong() {
   guess1 = null;
   guess2 = null;
   count = 0;
+  selected.length = 0;
 
   let removeSelected = document.querySelectorAll(".currentSelection");
   removeSelected.forEach(function(val) {
@@ -227,9 +227,16 @@ function resetGuessMatch() {
   guess1 = null;
   guess2 = null;
   count = 0;
+  selected.length = 0;
 
   let removeSelected = document.querySelectorAll(".currentSelection");
   removeSelected.forEach(function(val) {
     val.classList.remove("currentSelection");
+  });
+}
+
+function disable(catsGrid) {
+  catsGrid.forEach(function(card) {
+    card.classList.add("disabled");
   });
 }

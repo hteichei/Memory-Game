@@ -80,10 +80,6 @@ function setLowScore(){
 setLowScore();
 
 
-
-
-
-
 const game = document.getElementById('game');
 
 const grid = document.createElement('section');
@@ -179,10 +175,9 @@ function winner() {
 	grid.textContent = 'You Won!';
 	grid.classList.add('winner');
 	
-	if(totalClicks < localStorage.getItem('cats_LowScore')) {
+	if(totalClicks < localStorage.getItem('cats_LowScore') || Number(localStorage.getItem('cats_LowScore')) === 0) {
 		localStorage.setItem('cats_LowScore', totalClicks);
 	}
-	
 	setLowScore();
 }
 
